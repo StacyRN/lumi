@@ -1,281 +1,283 @@
+// lib/screens/student_home_screen.dart
 import 'dart:ui';
-import 'package:flutter/material.dart';
+import 'package:flutter/cupertino.dart';
+import 'package:flutter/material.dart' show Icons; // nur für Icons-Konstanten
 import 'package:fl_chart/fl_chart.dart';
 import 'settings_screen.dart';
 
-class StudentHomeScreen extends StatelessWidget {
+class StudentHomeScreen extends StatefulWidget {
   const StudentHomeScreen({super.key});
 
   @override
+  State<StudentHomeScreen> createState() => _StudentHomeScreenState();
+}
+
+class _StudentHomeScreenState extends State<StudentHomeScreen> {
+  final Map<String, bool> homeworkStatus = {
+    'Math': true,
+    'English': false,
+    'Physics': false,
+    'Chemistry': true,
+    'Art': false,
+  };
+
+  final Map<String, Map<String, String>> subjectDetails = {
+    'Math': {
+      'teacher': 'Mr. Smith',
+      'grade': 'A-',
+      'nextExam': '15 June 2025'
+    },
+    'English': {
+      'teacher': 'Ms. Johnson',
+      'grade': 'B+',
+      'nextExam': '20 June 2025'
+    },
+    'Science': {
+      'teacher': 'Dr. Brown',
+      'grade': 'A',
+      'nextExam': '22 June 2025'
+    },
+    'History': {
+      'teacher': 'Mr. Clark',
+      'grade': 'B',
+      'nextExam': '10 June 2025'
+    },
+    'Chemistry': {
+      'teacher': 'Dr. Green',
+      'grade': 'A+',
+      'nextExam': '18 June 2025'
+    },
+    'Art': {
+      'teacher': 'Ms. Blue',
+      'grade': 'A',
+      'nextExam': '25 June 2025'
+    },
+  };
+
+  @override
   Widget build(BuildContext context) {
-    final theme = Theme.of(context);
+    final theme = CupertinoTheme.of(context);
     final isDark = theme.brightness == Brightness.dark;
 
-    final homeworkItems = [
-      {'subject': 'Math', 'done': true},
-      {'subject': 'English', 'done': false},
-      {'subject': 'Physics', 'done': false},
-      {'subject': 'Chemistry', 'done': true},
-      {'subject': 'Art', 'done': false},
-    ];
+    final bgColor = isDark ? const Color(0xFF101012) : CupertinoColors.systemGroupedBackground;
+    final cardColor = isDark ? const Color(0xFF1E1E20) : CupertinoColors.secondarySystemGroupedBackground;
 
-    return Scaffold(
-      backgroundColor: theme.scaffoldBackgroundColor,
-      body: SafeArea(
-        child: SingleChildScrollView(
-          padding: const EdgeInsets.all(20),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              // Profile Header
-              Row(
-                children: [
-                  GestureDetector(
-                    onTap: () {
-                      // TODO: Navigate to profile screen
-                    },
-                    child: const CircleAvatar(
-                      radius: 26,
-                      backgroundImage: AssetImage('assets/images/profile.png'),
-                    ),
-                  ),
-                  const SizedBox(width: 12),
-                  Expanded(
-                    child: Text(
-                      "Hello, Student 👋",
-                      style: theme.textTheme.headlineSmall?.copyWith(fontWeight: FontWeight.w600),
-                    ),
-                  ),
-                  IconButton(
-                    icon: const Icon(Icons.notifications_none),
-                    onPressed: () {},
-                  ),
-                  IconButton(
-                    icon: const Icon(Icons.settings),
-                    onPressed: () {
-                      showModalBottomSheet(
-                        context: context,
-                        isScrollControlled: true,
-                        backgroundColor: Colors.transparent,
-                        builder: (context) => const SettingsScreen(),
-                      );
-                    },
-                  ),
-                ],
+    return CupertinoPageScaffold(
+      backgroundColor: bgColor,
+      navigationBar: const CupertinoNavigationBar(
+        middle: Text('Dashboard'),
+        border: null,
+      ),
+      child: SafeArea(
+        child: CustomScrollView(
+          slivers: [
+            SliverPadding(
+              padding: const EdgeInsets.all(20),
+              sliver: SliverList(
+                delegate: SliverChildListDelegate.fixed([
+                  _buildHeader(theme, context),
+                  const SizedBox(height: 20),
+                  _buildSearch(cardColor),
+                  const SizedBox(height: 24),
+                  _buildXpCard(theme),
+                  const SizedBox(height: 32),
+                  _buildHomework(context, theme),
+                  const SizedBox(height: 32),
+                  _buildSubjects(context, isDark),
+                  const SizedBox(height: 32),
+                  _buildChartTitle(theme),
+                  const SizedBox(height: 200, child: _GradeChart()),
+                ]),
               ),
-              const SizedBox(height: 20),
-
-              // Search
-              TextField(
-                decoration: InputDecoration(
-                  hintText: 'Search subjects, homework...',
-                  prefixIcon: const Icon(Icons.search),
-                  fillColor: isDark ? Colors.grey[850] : Colors.grey[200],
-                  filled: true,
-                  border: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(16),
-                    borderSide: BorderSide.none,
-                  ),
-                ),
-              ),
-              const SizedBox(height: 20),
-
-              // XP Card
-              Container(
-                decoration: BoxDecoration(
-                  gradient: LinearGradient(
-                    colors: [Colors.blue.shade600, Colors.indigoAccent],
-                    begin: Alignment.topLeft,
-                    end: Alignment.bottomRight,
-                  ),
-                  borderRadius: BorderRadius.circular(20),
-                ),
-                padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 24),
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    const Text('XP Points', style: TextStyle(color: Colors.white, fontSize: 18)),
-                    Text(
-                      '1,230',
-                      style: theme.textTheme.headlineSmall?.copyWith(
-                        color: Colors.white,
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-              const SizedBox(height: 24),
-
-              Text('Homework', style: theme.textTheme.titleMedium?.copyWith(fontWeight: FontWeight.w600)),
-              const SizedBox(height: 12),
-
-              SizedBox(
-                height: 90,
-                child: ListView.separated(
-                  scrollDirection: Axis.horizontal,
-                  itemCount: homeworkItems.length,
-                  separatorBuilder: (_, __) => const SizedBox(width: 12),
-                  itemBuilder: (context, index) {
-                    final item = homeworkItems[index];
-                    final done = item['done'] as bool;
-                    final subject = item['subject'] as String;
-
-                    return GestureDetector(
-                      onTap: () {
-                        showDialog(
-                          context: context,
-                          builder: (context) {
-                            return AlertDialog(
-                              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-                              title: Text(subject),
-                              content: Column(
-                                mainAxisSize: MainAxisSize.min,
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  const Text("Due: May 12, 2025"),
-                                  const SizedBox(height: 8),
-                                  const Text("Assignment: Complete the practice worksheet."),
-                                  const SizedBox(height: 20),
-                                  ElevatedButton(
-                                    onPressed: () {
-                                      Navigator.of(context).pop();
-                                      showModalBottomSheet(
-                                        context: context,
-                                        shape: const RoundedRectangleBorder(
-                                          borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
-                                        ),
-                                        builder: (context) {
-                                          return Padding(
-                                            padding: const EdgeInsets.all(20),
-                                            child: Column(
-                                              mainAxisSize: MainAxisSize.min,
-                                              children: [
-                                                const Text("Submit as...", style: TextStyle(fontWeight: FontWeight.bold)),
-                                                const SizedBox(height: 16),
-                                                ListTile(
-                                                  leading: const Icon(Icons.picture_as_pdf),
-                                                  title: const Text("PDF File"),
-                                                  onTap: () {
-                                                    Navigator.of(context).pop();
-                                                    // TODO: Add PDF submission logic
-                                                  },
-                                                ),
-                                                ListTile(
-                                                  leading: const Icon(Icons.camera_alt),
-                                                  title: const Text("Take Photo"),
-                                                  onTap: () {
-                                                    Navigator.of(context).pop();
-                                                    // TODO: Add photo submission logic
-                                                  },
-                                                ),
-                                              ],
-                                            ),
-                                          );
-                                        },
-                                      );
-                                    },
-                                    child: const Text("Submit"),
-                                  ),
-                                ],
-                              ),
-                            );
-                          },
-                        );
-                      },
-                      child: Stack(
-                        alignment: Alignment.center,
-                        children: [
-                          ClipOval(
-                            child: BackdropFilter(
-                              filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),
-                              child: Container(
-                                width: 70,
-                                height: 70,
-                                decoration: BoxDecoration(
-                                  color: done
-                                      ? Colors.green.withOpacity(0.25)
-                                      : Colors.blueAccent.withOpacity(0.15),
-                                  shape: BoxShape.circle,
-                                  border: Border.all(
-                                    color: done ? Colors.green : Colors.blueAccent,
-                                    width: 2,
-                                  ),
-                                ),
-                                child: Center(
-                                  child: Icon(
-                                    done ? Icons.check : Icons.menu_book_outlined,
-                                    color: done ? Colors.green : Colors.blueAccent,
-                                    size: 28,
-                                  ),
-                                ),
-                              ),
-                            ),
-                          ),
-                        ],
-                      ),
-                    );
-                  },
-                ),
-              ),
-
-              const SizedBox(height: 24),
-
-              Text('Subjects', style: theme.textTheme.titleMedium?.copyWith(fontWeight: FontWeight.w600)),
-              const SizedBox(height: 12),
-              Wrap(
-                spacing: 14,
-                runSpacing: 14,
-                children: [
-                  _subjectCard(context, 'Math', Colors.orange),
-                  _subjectCard(context, 'English', Colors.green),
-                  _subjectCard(context, 'Science', Colors.purple),
-                  _subjectCard(context, 'History', Colors.red),
-                  _subjectCard(context, 'PE', Colors.teal),
-                  _subjectCard(context, 'Chemistry', Colors.indigo),
-                  _subjectCard(context, 'Art', Colors.pink),
-                ],
-              ),
-              const SizedBox(height: 32),
-
-              Text('Grade Distribution', style: theme.textTheme.titleMedium?.copyWith(fontWeight: FontWeight.w600)),
-              const SizedBox(height: 200, child: _GradeChart()),
-            ],
-          ),
+            ),
+          ],
         ),
       ),
     );
   }
 
-  Widget _subjectCard(BuildContext context, String name, Color color) {
-    final isDark = Theme.of(context).brightness == Brightness.dark;
+  Widget _buildHeader(CupertinoThemeData theme, BuildContext context) {
+    return Row(
+      children: [
+        Hero(
+          tag: 'profile',
+          child: ClipOval(
+            child: Image.asset('assets/images/profile.png', width: 52, height: 52, fit: BoxFit.cover),
+          ),
+        ),
+        const SizedBox(width: 12),
+        Expanded(
+          child: Text('Hello, Student 👋',
+              style: theme.textTheme.navTitleTextStyle.copyWith(fontWeight: FontWeight.w600)),
+        ),
+        CupertinoButton(
+          padding: EdgeInsets.zero,
+          onPressed: () {},
+          child: Icon(Icons.notifications_none, color: theme.primaryColor),
+        ),
+        CupertinoButton(
+          padding: EdgeInsets.zero,
+          onPressed: () => showCupertinoModalPopup(
+            context: context,
+            builder: (_) => const SettingsScreen(),
+          ),
+          child: Icon(Icons.settings, color: theme.primaryColor),
+        ),
+      ],
+    );
+  }
 
+  Widget _buildSearch(Color cardColor) => CupertinoSearchTextField(
+    placeholder: 'Search subjects, homework…',
+    backgroundColor: cardColor,
+  );
+
+  Widget _buildXpCard(CupertinoThemeData theme) {
     return Container(
-      width: 140,
-      padding: const EdgeInsets.symmetric(vertical: 16),
       decoration: BoxDecoration(
-        color: isDark ? color.withOpacity(0.25) : color.withOpacity(0.15),
-        borderRadius: BorderRadius.circular(16),
-        boxShadow: [
-          if (!isDark)
-            BoxShadow(
-              color: color.withOpacity(0.2),
-              blurRadius: 12,
-              offset: const Offset(0, 6),
-            ),
+        gradient: const LinearGradient(
+          colors: [CupertinoColors.systemBlue, CupertinoColors.systemIndigo],
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+        ),
+        borderRadius: BorderRadius.circular(24),
+        boxShadow: const [
+          BoxShadow(color: Color(0x66007AFF), blurRadius: 20, spreadRadius: 0, offset: Offset(0, 8)),
         ],
       ),
-      child: Center(
-        child: Text(
-          name,
-          style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-            fontWeight: FontWeight.w600,
-            color: isDark ? Colors.white : Colors.black87,
-          ),
-        ),
+      padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 24),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        children: [
+          const Text('XP Points', style: TextStyle(color: CupertinoColors.white, fontSize: 18)),
+          Text('1 230',
+              style: theme.textTheme.navLargeTitleTextStyle.copyWith(color: CupertinoColors.white, fontSize: 30)),
+        ],
       ),
     );
   }
+
+  Widget _buildHomework(BuildContext ctx, CupertinoThemeData theme) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text('Homework', style: theme.textTheme.navTitleTextStyle.copyWith(fontWeight: FontWeight.w600)),
+        const SizedBox(height: 14),
+        SizedBox(
+          height: 100,
+          child: ListView.separated(
+            scrollDirection: Axis.horizontal,
+            itemCount: homeworkStatus.length,
+            separatorBuilder: (_, __) => const SizedBox(width: 14),
+            itemBuilder: (context, index) {
+              final subject = homeworkStatus.keys.elementAt(index);
+              final done = homeworkStatus[subject]!;
+
+              return GestureDetector(
+                onTap: () => setState(() => homeworkStatus[subject] = !done),
+                child: ClipOval(
+                  child: BackdropFilter(
+                    filter: ImageFilter.blur(sigmaX: 12, sigmaY: 12),
+                    child: Container(
+                      width: 78,
+                      height: 78,
+                      decoration: BoxDecoration(
+                        shape: BoxShape.circle,
+                        color: done
+                            ? CupertinoColors.systemGreen.withOpacity(0.28)
+                            : CupertinoColors.systemBlue.withOpacity(0.20),
+                        border: Border.all(
+                          color: done ? CupertinoColors.systemGreen : CupertinoColors.systemBlue,
+                          width: 2,
+                        ),
+                      ),
+                      child: Center(
+                        child: Icon(
+                          done ? CupertinoIcons.check_mark_circled_solid : CupertinoIcons.book_solid,
+                          color: done ? CupertinoColors.systemGreen : CupertinoColors.systemBlue,
+                          size: 28,
+                        ),
+                      ),
+                    ),
+                  ),
+                ),
+              );
+            },
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildSubjects(BuildContext ctx, bool isDark) {
+    final subjects = subjectDetails.keys.toList();
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text('Subjects',
+            style: CupertinoTheme.of(ctx).textTheme.navTitleTextStyle.copyWith(fontWeight: FontWeight.w600)),
+        const SizedBox(height: 14),
+        SizedBox(
+          height: 100,
+          child: ListView.separated(
+            scrollDirection: Axis.horizontal,
+            itemCount: subjects.length,
+            separatorBuilder: (_, __) => const SizedBox(width: 12),
+            itemBuilder: (context, index) {
+              final subject = subjects[index];
+              final color = CupertinoColors.activeBlue;
+              return GestureDetector(
+                onTap: () => _showSubjectDetails(ctx, subject),
+                child: AnimatedContainer(
+                  duration: const Duration(milliseconds: 240),
+                  width: 160,
+                  padding: const EdgeInsets.symmetric(vertical: 18),
+                  decoration: BoxDecoration(
+                    color: isDark ? color.withOpacity(0.30) : color.withOpacity(0.20),
+                    borderRadius: BorderRadius.circular(18),
+                  ),
+                  child: Center(
+                    child: Text(subject,
+                        style: CupertinoTheme.of(ctx)
+                            .textTheme
+                            .textStyle
+                            .copyWith(fontWeight: FontWeight.w600, fontSize: 16)),
+                  ),
+                ),
+              );
+            },
+          ),
+        ),
+      ],
+    );
+  }
+
+  void _showSubjectDetails(BuildContext context, String subject) {
+    final details = subjectDetails[subject]!;
+    showCupertinoDialog(
+      context: context,
+      builder: (_) => CupertinoAlertDialog(
+        title: Text(subject),
+        content: Column(
+          children: [
+            const SizedBox(height: 8),
+            Text('Teacher: ${details['teacher']}'),
+            Text('Grade: ${details['grade']}'),
+            Text('Next Exam: ${details['nextExam']}'),
+          ],
+        ),
+        actions: [
+          CupertinoDialogAction(
+            child: const Text('Close'),
+            onPressed: () => Navigator.of(context).pop(),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildChartTitle(CupertinoThemeData theme) =>
+      Text('Grade Distribution', style: theme.textTheme.navTitleTextStyle.copyWith(fontWeight: FontWeight.w600));
 }
 
 class _GradeChart extends StatelessWidget {
@@ -283,46 +285,59 @@ class _GradeChart extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final isDark = Theme.of(context).brightness == Brightness.dark;
-
+    final isDark = CupertinoTheme.of(context).brightness == Brightness.dark;
     final labels = ['1', '2', '3', '4', '5'];
-    final colors = [Colors.green, Colors.blue, Colors.orange, Colors.purple, Colors.red];
+    final colors = [
+      CupertinoColors.systemGreen,
+      CupertinoColors.systemBlue,
+      CupertinoColors.systemYellow,
+      CupertinoColors.systemOrange,
+      CupertinoColors.systemRed,
+    ];
 
     return BarChart(
       BarChartData(
+        barTouchData: BarTouchData(
+          enabled: true,
+          touchTooltipData: BarTouchTooltipData(
+            tooltipBgColor: CupertinoColors.black.withOpacity(0.8),
+            getTooltipItem: (group, _, rod, __) =>
+                BarTooltipItem('Grade ${group.x + 1}\n${rod.toY.toInt()}×',
+                    const TextStyle(color: CupertinoColors.white)),
+          ),
+        ),
         borderData: FlBorderData(show: false),
+        gridData: FlGridData(show: false),
         titlesData: FlTitlesData(
           bottomTitles: AxisTitles(
             sideTitles: SideTitles(
               showTitles: true,
-              getTitlesWidget: (value, _) {
-                return Text(
-                  labels[value.toInt()],
+              getTitlesWidget: (v, _) => Text(labels[v.toInt()],
                   style: TextStyle(
-                    color: isDark ? Colors.white70 : Colors.black87,
-                    fontWeight: FontWeight.w500,
-                  ),
-                );
-              },
+                      color: isDark ? CupertinoColors.white : CupertinoColors.black,
+                      fontSize: 12,
+                      fontWeight: FontWeight.w500)),
             ),
           ),
           leftTitles: AxisTitles(sideTitles: SideTitles(showTitles: false)),
-          topTitles: AxisTitles(sideTitles: SideTitles(showTitles: false)),
           rightTitles: AxisTitles(sideTitles: SideTitles(showTitles: false)),
+          topTitles: AxisTitles(sideTitles: SideTitles(showTitles: false)),
         ),
-        barGroups: List.generate(5, (i) {
-          return BarChartGroupData(
+        barGroups: List.generate(
+          5,
+              (i) => BarChartGroupData(
             x: i,
             barRods: [
               BarChartRodData(
                 toY: 5 - i.toDouble(),
-                width: 18,
                 color: colors[i],
-                borderRadius: BorderRadius.circular(4),
-              ),
+                width: 22,
+                borderRadius: BorderRadius.circular(8),
+                borderSide: BorderSide(color: colors[i].withOpacity(0.6), width: 1),
+              )
             ],
-          );
-        }),
+          ),
+        ),
       ),
     );
   }

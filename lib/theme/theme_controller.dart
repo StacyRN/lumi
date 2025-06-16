@@ -1,11 +1,9 @@
-import 'package:flutter/material.dart';
+import 'package:flutter/cupertino.dart';
 
 class ThemeController {
-  static final themeMode = ValueNotifier<ThemeMode>(ThemeMode.light);
+  static ValueNotifier<bool> isDarkMode = ValueNotifier(false);
 
-  static void toggleTheme(bool isDark) {
-    themeMode.value = isDark ? ThemeMode.dark : ThemeMode.light;
+  static void toggleTheme() {
+    isDarkMode.value = !isDarkMode.value;
   }
-
-  static bool get isDarkMode => themeMode.value == ThemeMode.dark;
 }

@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+import 'package:flutter/cupertino.dart';
 import 'package:lumi/widgets/bottom_nav_bar.dart';
 
 class LoginScreen extends StatefulWidget {
@@ -15,63 +15,65 @@ class _LoginScreenState extends State<LoginScreen> {
     if (selectedRole == 'student') {
       Navigator.pushReplacement(
         context,
-        MaterialPageRoute(builder: (context) => const BottomNavBar()),
+        CupertinoPageRoute(builder: (context) => const BottomNavBar()),
       );
     } else {
-      // No navigation for teacher yet
       debugPrint("Teacher mode selected");
     }
   }
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(title: const Text('Login')),
-      body: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          const Text(
-            'Login as:',
-            style: TextStyle(fontSize: 20),
-          ),
-          const SizedBox(height: 20),
-          Row(
+    final isDark = CupertinoTheme.of(context).brightness == Brightness.dark;
+
+    return CupertinoPageScaffold(
+      navigationBar: const CupertinoNavigationBar(
+        middle: Text('Login'),
+      ),
+      child: SafeArea(
+        child: Center(
+          child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              ElevatedButton(
-                onPressed: () {
-                  setState(() {
-                    selectedRole = 'student';
-                  });
-                  handleLogin(); // Navigate only for student
-                },
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: selectedRole == 'student'
-                      ? Colors.blue
-                      : Colors.grey.shade300,
-                  foregroundColor: Colors.white,
-                ),
-                child: const Text('Log In as Student'),
+              const Text(
+                'Login as:',
+                style: TextStyle(fontSize: 20),
               ),
-              const SizedBox(width: 20),
-              ElevatedButton(
-                onPressed: () {
-                  setState(() {
-                    selectedRole = 'teacher';
-                  });
-                  // Just change color, no navigation
-                },
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: selectedRole == 'teacher'
-                      ? Colors.blue
-                      : Colors.grey.shade300,
-                  foregroundColor: Colors.white,
-                ),
-                child: const Text('Log In as Teacher'),
+              const SizedBox(height: 20),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  CupertinoButton(
+                    color: selectedRole == 'student'
+                        ? CupertinoColors.activeBlue
+                        : CupertinoColors.systemGrey4,
+                    padding: const EdgeInsets.symmetric(horizontal: 16),
+                    onPressed: () {
+                      setState(() {
+                        selectedRole = 'student';
+                      });
+                      handleLogin();
+                    },
+                    child: const Text('Student'),
+                  ),
+                  const SizedBox(width: 20),
+                  CupertinoButton(
+                    color: selectedRole == 'teacher'
+                        ? CupertinoColors.activeBlue
+                        : CupertinoColors.systemGrey4,
+                    padding: const EdgeInsets.symmetric(horizontal: 16),
+                    onPressed: () {
+                      setState(() {
+                        selectedRole = 'teacher';
+                      });
+                    },
+                    child: const Text('Teacher'),
+                  ),
+                ],
               ),
             ],
           ),
-        ],
+        ),
       ),
     );
   }

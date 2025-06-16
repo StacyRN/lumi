@@ -1,3 +1,4 @@
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:fl_chart/fl_chart.dart';
 
@@ -43,8 +44,8 @@ class _GradesScreenState extends State<GradesScreen> {
   };
 
   List<int> get gradeCounts {
-    final List<int> counts = [0, 0, 0, 0, 0]; // Index 0 → grade 1, index 4 → grade 5
-    final grades = yearlyGrades[selectedYear]!;
+    final List<int> counts = [0, 0, 0, 0, 0];
+    final grades = yearlyGrades[selectedYear] ?? [];
     for (var item in grades) {
       int grade = item['grade'];
       if (grade >= 1 && grade <= 5) {
@@ -54,123 +55,197 @@ class _GradesScreenState extends State<GradesScreen> {
     return counts;
   }
 
+  final List<Color> gradeColors = [
+    CupertinoColors.systemGreen, // Grade 1
+    CupertinoColors.systemGreen.withOpacity(0.6),
+    CupertinoColors.systemYellow,
+    CupertinoColors.systemOrange,
+    CupertinoColors.systemRed, // Grade 5
+  ];
+
   @override
   Widget build(BuildContext context) {
-    final theme = Theme.of(context);
-    final isDark = theme.brightness == Brightness.dark;
+    final grades = yearlyGrades[selectedYear] ?? [];
+    final sortedGrades = grades.toList()
+      ..sort((a, b) => (a['subject'] as String).compareTo(b['subject'] as String));
 
-    return Scaffold(
-      appBar: AppBar(
-        title: const Text('Grades'),
+    return CupertinoPageScaffold(
+      navigationBar: const CupertinoNavigationBar(
+        middle: Text('Grades'),
       ),
-      body: Padding(
-        padding: const EdgeInsets.all(16),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            // Year Dropdown
-            DropdownButton<String>(
-              value: selectedYear,
-              onChanged: (value) {
-                setState(() {
-                  selectedYear = value!;
-                });
-              },
-              items: yearlyGrades.keys
-                  .map((year) => DropdownMenuItem(value: year, child: Text(year)))
-                  .toList(),
-            ),
-            const SizedBox(height: 16),
-
-            // Chart
-            SizedBox(
-              height: 200,
-              child: BarChart(
-                BarChartData(
-                  borderData: FlBorderData(show: false),
-                  titlesData: FlTitlesData(
-                    bottomTitles: AxisTitles(
-                      sideTitles: SideTitles(
-                        showTitles: true,
-                        getTitlesWidget: (value, _) {
-                          return Text(['1', '2', '3', '4', '5'][value.toInt()]);
+      child: SafeArea(
+        child: Padding(
+          padding: const EdgeInsets.all(16),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              // Dropdown as CupertinoPicker in a GestureDetector
+              GestureDetector(
+                onTap: () {
+                  showCupertinoModalPopup(
+                    context: context,
+                    builder: (_) => SizedBox(
+                      height: 250,
+                      child: CupertinoPicker(
+                        backgroundColor: CupertinoColors.systemBackground,
+                        itemExtent: 32,
+                        scrollController: FixedExtentScrollController(
+                          initialItem:
+                          yearlyGrades.keys.toList().indexOf(selectedYear),
+                        ),
+                        onSelectedItemChanged: (index) {
+                          setState(() {
+                            selectedYear = yearlyGrades.keys.elementAt(index);
+                          });
                         },
-                        reservedSize: 28,
+                        children: yearlyGrades.keys
+                            .map((year) => Center(child: Text(year)))
+                            .toList(),
                       ),
                     ),
-                    leftTitles: AxisTitles(
-                      sideTitles: SideTitles(showTitles: false),
-                    ),
-                    topTitles: AxisTitles(sideTitles: SideTitles(showTitles: false)),
-                    rightTitles: AxisTitles(sideTitles: SideTitles(showTitles: false)),
-                  ),
-                  barGroups: gradeCounts
-                      .asMap()
-                      .entries
-                      .map(
-                        (entry) => BarChartGroupData(
-                      x: entry.key,
-                      barRods: [
-                        BarChartRodData(
-                          toY: entry.value.toDouble(),
-                          color: entry.key == 4 ? Colors.red : Colors.green,
-                          width: 20,
-                        )
-                      ],
-                    ),
-                  )
-                      .toList(),
-                ),
-              ),
-            ),
-
-            const SizedBox(height: 24),
-            Text(
-              'Subjects',
-              style: theme.textTheme.titleMedium?.copyWith(fontWeight: FontWeight.bold),
-            ),
-            const SizedBox(height: 12),
-
-            // Subject list
-            ...yearlyGrades[selectedYear]!.map((item) {
-              final grade = item['grade'] as int;
-              final subject = item['subject'] as String;
-              final isFail = grade == 5;
-
-              return ListTile(
-                contentPadding: EdgeInsets.zero,
-                leading: CircleAvatar(
-                  radius: 20,
-                  backgroundColor: isFail ? Colors.red : Colors.green,
-                  child: Text(
-                    grade.toString(),
-                    style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
-                  ),
-                ),
-                title: Text(
-                  subject,
-                  style: theme.textTheme.bodyLarge,
-                ),
-              );
-            }),
-
-            const SizedBox(height: 20),
-
-            // Show More Button
-            Center(
-              child: ElevatedButton.icon(
-                onPressed: () {
-                  // Expand logic (optional)
+                  );
                 },
-                icon: const Icon(Icons.expand_more),
-                label: const Text('Show More'),
-                style: ElevatedButton.styleFrom(
-                  padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
-                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                child: Container(
+                  padding:
+                  const EdgeInsets.symmetric(vertical: 12, horizontal: 16),
+                  decoration: BoxDecoration(
+                    border: Border.all(color: CupertinoColors.systemGrey),
+                    borderRadius: BorderRadius.circular(8),
+                  ),
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Text(selectedYear, style: const TextStyle(fontSize: 16)),
+                      const Icon(CupertinoIcons.chevron_down),
+                    ],
+                  ),
                 ),
               ),
-            ),
-          ],
+
+              const SizedBox(height: 16),
+
+              // Bar chart or no data
+              if (grades.isNotEmpty)
+                SizedBox(
+                  height: 220,
+                  child: BarChart(
+                    BarChartData(
+                      barTouchData: BarTouchData(
+                        enabled: true,
+                        touchTooltipData: BarTouchTooltipData(
+                          tooltipBgColor:
+                          CupertinoColors.black.withOpacity(0.8),
+                          getTooltipItem: (group, _, rod, __) {
+                            return BarTooltipItem(
+                              'Note ${group.x + 1}: ${rod.toY.toInt()}x',
+                              const TextStyle(color: CupertinoColors.white),
+                            );
+                          },
+                        ),
+                      ),
+                      borderData: FlBorderData(show: false),
+                      titlesData: FlTitlesData(
+                        bottomTitles: AxisTitles(
+                          sideTitles: SideTitles(
+                            showTitles: true,
+                            getTitlesWidget: (value, _) =>
+                                Text((value.toInt() + 1).toString()),
+                            reservedSize: 28,
+                          ),
+                        ),
+                        leftTitles:
+                        AxisTitles(sideTitles: SideTitles(showTitles: false)),
+                        topTitles:
+                        AxisTitles(sideTitles: SideTitles(showTitles: false)),
+                        rightTitles:
+                        AxisTitles(sideTitles: SideTitles(showTitles: false)),
+                      ),
+                      barGroups: gradeCounts
+                          .asMap()
+                          .entries
+                          .map(
+                            (entry) => BarChartGroupData(
+                          x: entry.key,
+                          barRods: [
+                            BarChartRodData(
+                              toY: entry.value.toDouble(),
+                              color: gradeColors[entry.key],
+                              width: 20,
+                              borderRadius: BorderRadius.circular(4),
+                            ),
+                          ],
+                        ),
+                      )
+                          .toList(),
+                    ),
+                  ),
+                )
+              else
+                const Center(
+                  child: Text(
+                    'Keine Daten für dieses Jahr.',
+                    style: TextStyle(color: CupertinoColors.systemGrey),
+                  ),
+                ),
+
+              const SizedBox(height: 24),
+
+              Text(
+                'Subjects',
+                style: CupertinoTheme.of(context)
+                    .textTheme
+                    .navTitleTextStyle
+                    .copyWith(fontWeight: FontWeight.bold),
+              ),
+
+              const SizedBox(height: 12),
+
+              // Subject list
+              if (grades.isNotEmpty)
+                Expanded(
+                  child: ListView(
+                    children: sortedGrades.map((item) {
+                      final grade = item['grade'] as int;
+                      final subject = item['subject'] as String;
+
+                      return Container(
+                        padding: const EdgeInsets.symmetric(vertical: 8),
+                        child: Row(
+                          children: [
+                            CircleAvatar(
+                              radius: 20,
+                              backgroundColor: gradeColors[grade - 1],
+                              child: Text(
+                                grade.toString(),
+                                style: const TextStyle(
+                                  color: CupertinoColors.white,
+                                  fontWeight: FontWeight.bold,
+                                ),
+                              ),
+                            ),
+                            const SizedBox(width: 12),
+                            Text(subject,
+                                style: CupertinoTheme.of(context)
+                                    .textTheme
+                                    .textStyle),
+                          ],
+                        ),
+                      );
+                    }).toList(),
+                  ),
+                )
+              else
+                const Padding(
+                  padding: EdgeInsets.symmetric(vertical: 16),
+                  child: Center(
+                    child: Text(
+                      'Keine Fächer verfügbar.',
+                      style: TextStyle(color: CupertinoColors.systemGrey),
+                    ),
+                  ),
+                ),
+            ],
+          ),
         ),
       ),
     );

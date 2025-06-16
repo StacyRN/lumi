@@ -33,6 +33,8 @@ dependencies:
   google_fonts: ^6.1.0
   fl_chart: ^0.64.0
   intl: ^0.18.1
+  percent_indicator: ^4.2.3
+  confetti: ^0.7.0
 
 
   # The following adds the Cupertino Icons font to your application.
@@ -58,6 +60,9 @@ flutter:
   assets:
     - assets/images/splash_screen.png
     - assets/images/profile.png
+    - assets/images/badge1.png
+    - assets/images/badge2.webp
+    - assets/images/badge3.webp
 
 
   # The following line ensures that the Material Icons font is

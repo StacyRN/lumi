@@ -1,8 +1,12 @@
-import 'package:flutter/material.dart';
-import 'package:lumi/screens/student_home_screen.dart'; // Your dashboard
-import 'package:lumi/screens/grades_screen.dart'; // Placeholder screens
-import 'package:lumi/screens/badges_screen.dart';
-import 'package:lumi/screens/timetable_screen.dart';
+import 'package:flutter/cupertino.dart';
+
+// Screens (Pfad ggf. anpassen)
+import '../screens/student_home_screen.dart';
+import '../screens/grades_screen.dart';
+import '../screens/timetable_screen.dart';
+import '../screens/badges_screen.dart';
+
+
 
 class BottomNavBar extends StatefulWidget {
   const BottomNavBar({super.key});
@@ -14,35 +18,44 @@ class BottomNavBar extends StatefulWidget {
 class _BottomNavBarState extends State<BottomNavBar> {
   int _selectedIndex = 0;
 
-  final List<Widget> _screens = [
-    const StudentHomeScreen(),
-    const GradesScreen(),
-    const BadgesScreen(),
-    const TimetableScreen(),
+  // Reihenfolge muss zu den BottomNavigationBarItems passen!
+  static final List<Widget> _screens = [
+    StudentHomeScreen(), // 0 – Home
+    GradesScreen(),      // 1 – Grades
+    TimetableScreen(),   // 2 – Timetable
+    BadgesScreen(),      // 3 – Badges
   ];
-
-  void _onItemTapped(int index) {
-    setState(() {
-      _selectedIndex = index;
-    });
-  }
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      body: _screens[_selectedIndex],
-      bottomNavigationBar: BottomNavigationBar(
+    return CupertinoTabScaffold(
+      tabBar: CupertinoTabBar(
         currentIndex: _selectedIndex,
-        onTap: _onItemTapped,
-        selectedItemColor: Colors.blue,
-        unselectedItemColor: Colors.grey,
+        onTap: (index) => setState(() => _selectedIndex = index),
         items: const [
-          BottomNavigationBarItem(icon: Icon(Icons.home), label: 'Home'),
-          BottomNavigationBarItem(icon: Icon(Icons.grade), label: 'Grades'),
-          BottomNavigationBarItem(icon: Icon(Icons.emoji_events), label: 'Badges'),
-          BottomNavigationBarItem(icon: Icon(Icons.calendar_today), label: 'Timetable'),
+          BottomNavigationBarItem(
+            icon: Icon(CupertinoIcons.home),
+            label: 'Home',
+          ),
+          BottomNavigationBarItem(
+            icon: Icon(CupertinoIcons.book),
+            label: 'Grades',
+          ),
+          BottomNavigationBarItem(
+            icon: Icon(CupertinoIcons.time),
+            label: 'Timetable',
+          ),
+          BottomNavigationBarItem(
+            icon: Icon(CupertinoIcons.star_circle),
+            label: 'Badges',
+          ),
         ],
       ),
+      tabBuilder: (_, index) {
+        return CupertinoTabView(
+          builder: (_) => _screens[index],
+        );
+      },
     );
   }
 }
