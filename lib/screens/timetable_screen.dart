@@ -9,27 +9,32 @@ class TimetableScreen extends StatefulWidget {
 }
 
 class _TimetableScreenState extends State<TimetableScreen> {
-  bool isWeeklyView = true;
-  DateTime selectedDate = DateTime.now();
+  DateTime selectedDate = DateTime.now(); // Zeigt immer aktuelle Woche an
 
   final Map<String, List<Map<String, String>>> timetableData = {
-    '2025-06-21': [
+    '2025-06-18': [
       {
-        'subject': 'Rapat dengan Bruce Wayne',
-        'teacher': 'Mr. Wayne',
-        'room': 'A1',
+        'subject': 'Math',
+        'teacher': 'Mr. Müller',
+        'room': 'R101',
         'start': '08:00',
         'end': '09:30',
       },
       {
-        'subject': 'Test wawasan kebangsaan di Dusun Wakanda',
-        'teacher': 'Ms. Shuri',
-        'room': 'B2',
+        'subject': 'Biology',
+        'teacher': 'Ms. Schmidt',
+        'room': 'R205',
+        'start': '10:00',
+        'end': '11:30',
+      },
+      {
+        'subject': 'History',
+        'teacher': 'Mr. Bauer',
+        'room': 'R310',
         'start': '12:00',
         'end': '13:30',
       },
     ],
-    // Füge weitere Daten nach Belieben hinzu...
   };
 
   List<DateTime> _getWeekDates(DateTime date) {
@@ -45,7 +50,7 @@ class _TimetableScreenState extends State<TimetableScreen> {
         content: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            const SizedBox(height: 3),
+            const SizedBox(height: 6),
             Text('Teacher: ${cls['teacher']}'),
             Text('Room: ${cls['room']}'),
             Text('Time: ${cls['start']} – ${cls['end']}'),
@@ -70,7 +75,7 @@ class _TimetableScreenState extends State<TimetableScreen> {
         SizedBox(width: 12),
         Expanded(
           child: Text(
-            'Study for english exam\n12:00 – 16:00',
+            'Study for English exam\n12:00 – 16:00',
             style: TextStyle(color: CupertinoColors.white),
           ),
         )
@@ -87,14 +92,14 @@ class _TimetableScreenState extends State<TimetableScreen> {
     final dayClasses = timetableData[dayKey] ?? [];
 
     final taskColor = isDark
-        ? CupertinoColors.systemPurple.withOpacity(0.2)
-        : CupertinoColors.activeBlue.withOpacity(0.1);
+        ? CupertinoColors.systemPurple.withOpacity(0.15)
+        : CupertinoColors.systemPurple.withOpacity(0.07);
     final reminderColor = isDark
         ? CupertinoColors.systemPurple.withOpacity(0.2)
-        : CupertinoColors.systemBlue;
+        : CupertinoColors.systemPurple;
 
     return CupertinoPageScaffold(
-      navigationBar: CupertinoNavigationBar(middle: const Text('Schedule')),
+      navigationBar: const CupertinoNavigationBar(middle: Text('Schedule')),
       child: SafeArea(
         child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
           const SizedBox(height: 16),
@@ -121,7 +126,7 @@ class _TimetableScreenState extends State<TimetableScreen> {
                     child: Column(
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
-                        Text(DateFormat.E().format(date),
+                        Text(DateFormat.E('en_US').format(date),
                             style: TextStyle(
                                 color: isSel
                                     ? CupertinoColors.white
@@ -148,7 +153,14 @@ class _TimetableScreenState extends State<TimetableScreen> {
           ),
           const SizedBox(height: 8),
           Expanded(
-            child: ListView.builder(
+            child: dayClasses.isEmpty
+                ? const Center(
+              child: Text(
+                'No classes scheduled for today.',
+                style: TextStyle(color: CupertinoColors.inactiveGray),
+              ),
+            )
+                : ListView.builder(
               padding: const EdgeInsets.symmetric(horizontal: 16),
               itemCount: dayClasses.length,
               itemBuilder: (ctx, i) {
@@ -156,41 +168,42 @@ class _TimetableScreenState extends State<TimetableScreen> {
                 return GestureDetector(
                   onTap: () => _showClassDetails(context, cls),
                   child: Container(
-                    margin: const EdgeInsets.only(bottom: 12),
-                    padding: const EdgeInsets.all(16),
+                    margin: const EdgeInsets.only(bottom: 14),
+                    padding: const EdgeInsets.all(18),
                     decoration: BoxDecoration(
                       color: taskColor,
-                      borderRadius: BorderRadius.circular(14),
+                      borderRadius: BorderRadius.circular(18),
                     ),
-                    child: Row(crossAxisAlignment: CrossAxisAlignment.center, children: [
-                      const Icon(CupertinoIcons.book_solid,
-                          color: CupertinoColors.extraLightBackgroundGray, size: 22),
-                      const SizedBox(width: 12),
-                      Expanded(
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Text(cls['subject'] ?? '',
-                                style: const TextStyle(
-                                    fontSize: 16, fontWeight: FontWeight.w500)),
-                            const SizedBox(height: 4),
-                            Text('${cls['start']} – ${cls['end']}',
-                                style: const TextStyle(
-                                    fontSize: 14,
-                                    color: CupertinoColors.inactiveGray)),
-                          ],
+                    child: Row(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text('${cls['start']}\n${cls['end']}',
+                            style: const TextStyle(
+                                fontSize: 14,
+                                fontWeight: FontWeight.w500,
+                                color: CupertinoColors.systemGrey)),
+                        const SizedBox(width: 16),
+                        Expanded(
+                          child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text(cls['subject'] ?? '',
+                                    style: const TextStyle(
+                                        fontSize: 17,
+                                        fontWeight: FontWeight.w600)),
+                                const SizedBox(height: 6),
+                                Text('Teacher: ${cls['teacher']}',
+                                    style: const TextStyle(
+                                        fontSize: 14,
+                                        color: CupertinoColors.systemGrey)),
+                                Text('Room: ${cls['room']}',
+                                    style: const TextStyle(
+                                        fontSize: 14,
+                                        color: CupertinoColors.systemGrey)),
+                              ]),
                         ),
-                      ),
-                      const SizedBox(width: 8),
-                      ClipOval(
-                        child: Image.asset(
-                          'assets/images/avatar.png',
-                          width: 28,
-                          height: 28,
-                          fit: BoxFit.cover,
-                        ),
-                      ),
-                    ]),
+                      ],
+                    ),
                   ),
                 );
               },

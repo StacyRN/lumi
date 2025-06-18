@@ -38,7 +38,7 @@ class SplashScreen extends StatelessWidget {
                     );
                   },
                   child: Text(
-                    'Begin',
+                    'LogIn',
                     style: GoogleFonts.interTight(
                       fontSize: 20,
                       color: CupertinoColors.white,

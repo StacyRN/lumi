@@ -60,9 +60,9 @@ flutter:
   assets:
     - assets/images/splash_screen.png
     - assets/images/profile.png
-    - assets/images/badge1.png
-    - assets/images/badge2.webp
-    - assets/images/badge3.webp
+    - assets/images/star.png
+    - assets/images/speech.png
+    - assets/images/assignment.png
 
 
   # The following line ensures that the Material Icons font is
